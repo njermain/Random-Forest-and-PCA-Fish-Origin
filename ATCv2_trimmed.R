@@ -10,15 +10,17 @@ str(getMasterlist(shape)$AGE)
 shape@master.list.org$AGE<-as.numeric(shape@master.list.org$age+1)
 shape@master.list.org$YEARCLASS<-as.numeric(shape@master.list.org$year-shape@master.list.org$age)
 getMasterlist(shape)$pop
+shape=enrich.master.list(shape)
+getMasterlist(shape)$AGE
 which(getMasterlist(shape)$age>=0)
 shape=stdCoefs(shape,classes="pop","YEARCLASS", bonferroni=T) 
 
 # check for significant interactions for yearclass and age manually without function stdCoefs
 head(str(getMasterlist(shape)))
-coef.names<-colnames(getMasterlist(shape))[28:90]
+coef.names<-colnames(getMasterlist(shape))[28:88]
 # for age
 ancovapvalues<-1
-for (i in 28:90){
+for (i in 28:88){
 ancovapvalues[i]<-summary(aov(getMasterlist(shape)[,i]~getMasterlist(shape)$pop*getMasterlist(shape)$AGE))[[1]]["getMasterlist(shape)$pop:getMasterlist(shape)$AGE","Pr(>F)"]
 }
 
@@ -66,6 +68,9 @@ standCfs<-getMasterlist(shape)[,usecols]
 
 # update master list
 shape=enrich.master.list(shape)
+
+# save final RData file after standardizing coefs
+save(shape, file="Stand_Coefs.RData")
 
 
 # canonical analysis of princippal coordinates
@@ -155,11 +160,32 @@ hist(gulf$month)
 
 
 
+######### Simplify dataset to include only response and wavelet coefficients ###########
+setwd("C:/Users/w10007346/Dropbox/ATC shape analsis project (1)/ACM_ShapeAnalysis/Analysis")
+load("Stand_Coefs.RData")
+
+# pull wavelet coefficients and response variable (pop) to save as csv
+getMasterlist(shape)[28:88]
+
+which(colnames(getMasterlist(shape))=='pop')
+
+df<-data.frame(c(getMasterlist(shape)[4],getMasterlist(shape)[28:88]))
+
+# save data to csv
+write.csv(df, file='wave_shape.csv')
+
+
+
 ########### Random forest analysis ###########################
 
 setwd("C:/Users/w10007346/Dropbox/ATC shape analsis project (1)/ACM_ShapeAnalysis/Analysis")
 load("partialrun16_Shapecoefs_plusMauritania.RData")
 head(getStdWavelet(shape))
+
+
+
+class(shape)
+
 
 library(randomForest)
 
